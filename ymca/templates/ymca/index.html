@@ -1,0 +1,10 @@
+<p><a href="/ymca/{{ user.id }}/">{{ user.username }}</a></p>
+{% if user_list %}
+    <ul>
+    {% for event in event_list %}
+		<li><a href="% url 'ymca:event_details' event_id %">{{ event.event_detail }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No registered events.</p>
+{% endif %}
