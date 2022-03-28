@@ -1,0 +1,72 @@
+<html>
+  <head>
+    <style>
+     h1{
+      color: black;
+      text-align: center;
+     }
+	 form{
+	   text-align: center;
+	 }
+
+
+    </style>
+  </head>
+  <body>
+	<h1>YMCA Programs Registration</h1>
+    <h1>Welcome, {{ user.username|default:'Guest' }}</h1>
+    <div>
+      {% if user.is_authenticated %}
+		  <form action="{% url 'logout' %}">
+		      <input type="submit" value="Log Out" />
+		  </form>
+		  {% if user.is_superuser %}
+		  		<form action="http://127.0.0.1:8000/admin/ymca/event/add/">
+					<input type="submit" value="Create Event" />
+				</form>
+		  {% else %}
+		  {% endif %}
+
+      {% else %}
+		  <form action="{% url 'signup' %}">
+		      <input type="submit" value="Sign Up" />
+		  </form>
+		  <form action="{% url 'login' %}">
+		      <input type="submit" value="Log In" />
+		  </form>
+      {% endif %}
+  </div>
+  		<h1>Events</h1>
+
+  <div class="container">
+	  {% block content %}
+	  		{% for event in event_list %}
+			<strong>{{ event }}</strong>
+			<ul>
+	  			<li>Start: {{ event.start_date }}</li>
+				<li>End: {{ event.end_date }}</li>
+				<li>Time: {{ event.start_time }}</li>
+				<li>Requirements: {{ event.requirements }}</li>
+				<li>Slots: 0/{{ event.slots }}</li>
+				<li>Non-Member Price: ${{ event.non_member_cost }}</li>
+				<li>Member Price: ${{ event.member_cost }}</li>
+				<li>Location: {{ event.location }}</li>
+				<li>Info: {{ event.description }}</li>
+				{% if user.is_authenticated and user.is_superuser != True %}
+					<a href="">REGISTER</a>
+				{% endif %}
+				{% if user.is_superuser%}
+					<a href="http://127.0.0.1:8000/admin/ymca/event/">Modify Event</a>
+					&emsp;
+					<a href="http://127.0.0.1:8000/admin/ymca/event/">Delete Event</a>
+				{% endif %}
+			</ul>
+			<hr style="width:18%;text-align:left;margin-left:0">
+			<br>
+			{% endfor %}
+
+	  {% endblock %}
+  </div>
+
+  </body>
+</html>

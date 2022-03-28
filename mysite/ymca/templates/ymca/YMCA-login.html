@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YMCA</title>
+  <link rel="stylesheet" href="YMCA-login.css">
+  <script defer src="YMCA-login.js"></script>
+</head>
+
+<body>
+
+  <div id="main-holder">
+    <img src="YMCApic.png" alt="YMCA Logo" width="150px" height="150px">
+    <h2 id="login-header">Welcome</h2>
+
+    <form action="{% url 'ymca:login'%" id="login-form">
+      <input type="text" name="username" id="username-field" class="login-form-field" placeholder="Username">
+      <input type="password" name="password" id="password-field" class="login-form-field" placeholder="Password">
+      <input type="submit" value="Login" id="login-form-submit">
+      <!-- <input type="submit" value="Guest View" id="guest-form-go">
+      <input type="submit" value="Register" id="reg-form-go"> -->
+    </form>
+
+    <form id="reg-form" style="display: none;">
+        <input type="text" name="username" id="username-field" class="reg-form-field" placeholder="Username">
+        <input type="password" name="password" id="reg-password-field" class="reg-form-field" placeholder="Password">
+        <input type="password" name="password" id="reg2-password-field" class="reg-form-field" placeholder="Repeat Password">
+        <label><input type="checkbox" name="instructor">I am an instructor</label>
+        <input type="submit" value="Register" id="reg-form-submit">
+     </form>
+
+    </div>
+</body>
+
+</html>
