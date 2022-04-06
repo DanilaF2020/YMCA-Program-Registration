@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html>
   <head>
     <style>
@@ -9,6 +8,7 @@
 	 form{
 	   text-align: center;
 	 }
+
     </style>
   </head>
   <body>
@@ -20,12 +20,19 @@
 		      <input type="submit" value="Log Out" />
 		  </form>
 		  {% if user.is_superuser %}
-		  		<form action="http://127.0.0.1:8000/admin/ymca/event/add/">
+		  		<!-- <form action="http://127.0.0.1:8000/admin/ymca/event/add/">
 					<input type="submit" value="Create Event" />
-				</form>
+				</form> -->
 				<form action="{% url 'create-event-form' %}">
 					<input type="submit" value="Create Event Form" />
 				</form>
+				<form action="{% url 'home' %}" id="login-form">
+					<input type="submit" value="HOME" />
+				  </form>
+				<form action="{% url 'searched' %}">
+					<input type="text" placeholder="Search Events" name="search">
+					<button type="submit">Go</button>
+				  </form>
 		  {% else %}
 		  {% endif %}
 
@@ -33,45 +40,47 @@
 		  <form action="{% url 'signup' %}">
 		      <input type="submit" value="Sign Up" />
 		  </form>
-		  <form action="{% url 'login' %}">
+		  <form action="{% url 'login' %}" method="get">
 		      <input type="submit" value="Log In" />
 		  </form>
       {% endif %}
-	</div>
-  	<h1>Events</h1>
+  </div>
+  		<h1>Events</h1>
 
-	<div class="container">
-		{% block content %}
-			{% for event in event_list %}
-				<strong>{{ event }}</strong>
-				<ul>
-			  		<li>Start: {{ event.start_date }}</li>
-					<li>End: {{ event.end_date }}</li>
-					<li>Days: {{ event.recurring }} </li>
-					<li>Time: {{ event.start_time }} - {{ event.end_time }}</li>
-					<li>Requirements: {{ event.requirements }}</li>
-					<li>Slots: {{ event.taken_slots }}/{{ event.slots }}</li>
-					<li>Non-Member Price: ${{ event.non_member_cost }}</li>
-					<li>Member Price: ${{ event.member_cost }}</li>
-					<li>Location: {{ event.location }}</li>
-					<li>Info: {{ event.description }}</li>
-					{% if user.is_authenticated and user.is_superuser != True %}
-					<form>
-						<a href="{% url 'register' event.id %}">REGISTER</a>
-						&emsp;
-						<a href="{% url 'drop' event.id %}">DROP</a>
-					</form>
-					{% endif %}
-					{% if user.is_superuser %}
-						<a href="http://127.0.0.1:8000/admin/ymca/event/{{ event.id }}/change/">Modify Event</a>
-						&emsp;
-						<a href="http://127.0.0.1:8000/admin/ymca/event/{{ event.id }}/change/">Delete Event</a>
-					{% endif %}
-				</ul>
-				<hr style="width:18%; text-align:left; margin-left:0">
-				<br>
+  <div class="container" id="events">
+	  {% block content %}
+	  		{% if event_list %}
+	  		{% for event in event_list %}
+			<strong>{{ event }}</strong>
+			<ul class="event">
+				<li>Start: {{ event.start_date }}</li>
+				<li>End: {{ event.end_date }}</li>
+				<li>Days: {{ event.recurring }} </li>
+				<li>Time: {{ event.start_time }} - {{ event.end_time }}</li>
+				<li>Requirements: {{ event.requirements }}</li>
+				<li>Slots: {{ event.taken_slots }}/{{ event.slots }}</li>
+				<li>Non-Member Price: ${{ event.non_member_cost }}</li>
+				<li>Member Price: ${{ event.member_cost }}</li>
+				<li>Location: {{ event.location }}</li>
+				<li>Info: {{ event.description }}</li>
+				{% if user.is_authenticated and user.is_superuser != True %}
+					<a href="{% url 'register' event.id %}">REGISTER</a>
+					<a href="{% url 'drop' event.id %}">DROP</a>
+				{% endif %}
+				{% if user.is_superuser%}
+				<a href="http://127.0.0.1:8000/admin/ymca/event/{{ event.id }}/change/">Modify Event</a>
+				&emsp;
+				<a href="http://127.0.0.1:8000/admin/ymca/event/{{ event.id }}/change/">Delete Event</a>
+				{% endif %}
+			</ul>
+			<hr style="width:18%;text-align:left;margin-left:0">
+			<br>
 			{% endfor %}
+			{% else %}
+				<h1>NO EVENTS. . . COME BACK LATER</h1>
+			{% endif %}
 	  {% endblock %}
-	</div>
+  </div>
+
   </body>
 </html>

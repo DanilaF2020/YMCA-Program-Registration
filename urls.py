@@ -1,6 +1,6 @@
 from django.urls import path
-
 from . import views
+
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -10,7 +10,7 @@ urlpatterns = [
 	path('drop/<event_id>', views.drop_event, name='drop'),
 	path('create-event/', views.create_event, name='create-event'),
 	path('create-event-form', views.display_event_form, name='create-event-form'),
-    path('searched', views.searched, name="searched"),
+	path('searched', views.searched, name="searched"),
 	# path('YMCA-login/', views.login, name='login'),
 	# path('<int:event_id>/', views.event_details, name='event_details'),
     # path('<int:event_id>/', views.event, name='event'),

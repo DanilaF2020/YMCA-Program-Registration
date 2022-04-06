@@ -34,13 +34,9 @@ from .forms import EventForm
 def home(request):
 	try:
 		event_list = Event.objects.all()
-		# print(event_list)
-		# weekdays = []
-		# for e in event_list:
-		# 	weekdays = list_day(e.id)
-
 	except:
 		event_list = []
+
 	return render(request, 'ymca/home.html', {'event_list':event_list})
 
 def weekdays_to_string(weekdays_int_list):
@@ -75,6 +71,12 @@ def weekdays_to_string(weekdays_int_list):
 	print("OUT weekdays_to_string")
 	return string_weekdays
 
+
+def searched(request):
+	if request.method == 'GET':
+		search = request.GET.get('search')
+		post = Event.objects.all().filter(event_name=search)
+	return render(request, 'ymca/home.html', {'event_list':post})
 
 
 def all_events(request):
