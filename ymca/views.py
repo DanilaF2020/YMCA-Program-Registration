@@ -1,5 +1,7 @@
 from django.http import Http404
+from django.http import HttpResponse
 from django.shortcuts import render
+from django.shortcuts import redirect
 from django.http import HttpResponse
 from django.template.loader import get_template
 from django.urls import reverse_lazy
@@ -9,7 +11,9 @@ from django.views.generic.edit import CreateView
 from .models import User
 from .models import Event
 from .models import EventPackage
+from .models import EventWeekDay
 
+from .forms import EventForm
 # https://alexpnt.github.io/2017/07/15/django-calendar/
 # https://www.youtube.com/watch?v=Myrp1WqSwCk
 
@@ -28,44 +32,275 @@ from .models import EventPackage
 #     return render(request, 'ymca/YMCA-login.html')
 
 def home(request):
-	event_list = Event.objects.all()
+	try:
+		event_list = Event.objects.all()
+		print(event_list)
+		weekdays = []
+		for e in randge(len(event_list)):
+			weekdays
+
+	except:
+		event_list = []
 	return render(request, 'ymca/home.html', {'event_list':event_list})
+
+def weekdays_to_string(weekdays_int_list):
+	string_weekdays_list = []
+	for d in weekdays_int_list:
+		if(d == 1):
+			string_weekdays_list.append("Monday")
+		if(d == 2):
+			string_weekdays_list.append("Tuesday")
+		if(d == 3):
+			string_weekdays_list.append("Wednesday")
+		if(d == 4):
+			string_weekdays_list.append("Thursday")
+		if(d == 5):
+			string_weekdays_list.append("Friday")
+		if(d == 6):
+			string_weekdays_list.append("Saturday")
+		if(d == 7):
+			string_weekdays_list.append("Sunday")
+	return string_weekdays_list
+
+
 
 def all_events(request):
 	event_list = Event.objects.all()
 	return render(request, 'ymca/events_list.html',{'event_list':event_list})
 
+
+
+def display_event_form(request):
+	context = {}
+	context['form'] = EventForm()
+	return render(request, 'ymca/create-event.html', context)
+
 def create_event(request):
-	return HttpResponse(request, 'http://127.0.0.1:8000/admin/ymca/event/add/')
+	print("create_event")
+	if(request.method == 'POST'):
+		form = EventForm(request.POST)
+		if(form.is_valid()):
+			print(form.cleaned_data)
+			data = {
+			'event_name' : form.cleaned_data.get("event_name"),
+			'start_date' : form.cleaned_data.get("start_date"),
+			'end_date' : form.cleaned_data.get("end_date"),
+			'start_time' : form.cleaned_data.get("start_time"),
+			'end_time' : form.cleaned_data.get("end_time"),
+			'slots' : form.cleaned_data.get("slots"),
+			'taken_slots' : 0,
+			'requirements' : form.cleaned_data.get("requirements"),
+			'recurring' : form.cleaned_data.get("recurring"),
+			'non_member_cost' : form.cleaned_data.get("non_member_cost"),
+			'member_cost' : form.cleaned_data.get("member_cost"),
+			'location' : form.cleaned_data.get("location"),
+			'description' : form.cleaned_data.get("description")
+			}
+			print("/n")
+			print(data)
 
-def search_user_events(request, name):
-	try:
-		user = User.objects.get(username == name)
-	except:
-		print("No User Found")
-		# Handle if user name was not found in the database
 
-	user_events_list = Event.objects.all(id = EventPackage.objects.all(user_id == user.id).event_id)
+			# Fix recurring later
+			new_event = Event.objects.create(event_name = data['event_name'],
+											 start_date = data['start_date'],
+											 end_date = data['end_date'],
+											 start_time = data['start_time'],
+											 end_time = data['end_time'],
+											 slots = data['slots'],
+											 taken_slots = data['taken_slots'],
+											 requirements = data['event_name'],
+											 recurring = 1,
+											 non_member_cost = data['non_member_cost'],
+											 member_cost = data['member_cost'],
+											 location = data['location'],
+											 description = data['description'])
+			new_event.save()
 
-	return render(request, 'ymca/events_list.html',{'event_list':user_events_list})
+			for day in data['recurring']:
+				new_event_weekday = EventWeekDay.objects.create(event_id = new_event.id, weedday_id = int(day))
+				new_event_weekday.save()
+			return home(request) #ADD A SUCCESS URL
+	return home(request)
 
-def register_for_event(request, u_id, event_object):
-	if (event_object.taken_slots == event_object.slots) or ():
-		return all_events(request)
+	# return HttpResponse(request, 'http://127.0.0.1:8000/admin/ymca/event/add/')
+# def search_user_events(request, name):
+# 	try:
+# 		# user = User.objects.get(username == name)
+# 		u_id = request.user.id
+# 	except:
+# 		print("No User Found")
+# 		# Handle if user name was not found in the database
+#
+# 	user_events_list = Event.objects.all(id = EventPackage.objects.all(user_id == u_id).event_id)
+#
+# 	return render(request, 'ymca/events_list.html',{'event_list':user_events_list})
+
+
+def register_for_event(request, event_id):
+	print("IN register_for_event")
+	username = request.user.username
+
+	u_id = request.user.id
+	event_object = Event.objects.get(id = event_id)
+	action = "REGISTER"
+	# is_conflic(u_id, event_object.id)
+	if (event_object.taken_slots == event_object.slots):
+		print("\nALL SLOTS ARE FULL. UNABLE TO SIGN UP")
+		# return all_events(request)
+	elif (is_signed_up(event_object.id, u_id)):
+		print("\nUSER WITH ID = " + str(u_id) + " ALREADY SIGNED UP FOR EVENT ID = " + str(event_object.id))
+		# return all_events(request)
+	elif (is_conflic(u_id, event_object.id)):
+		print("\nTIME CONFLICT WITH ALREADY EXISTING EVENT")
 	else:
+		print("\nUPDATING SLOT COUNT FOR EVENT_ID = " + str(event_object.id) + " : " + str(event_object.taken_slots) + "/" + str(event_object.slots))
 		event_object.taken_slots = event_object.taken_slots + 1
-		update_event_packages(u_id, event_object.id)
+		event_object.save()
+		print("\n***NEW SLOT COUNT FOR EVENT_ID = " + str(event_object.id) + " : " + str(event_object.taken_slots) + "/" + str(event_object.slots))
+		print("\nREQUESTING UPDATE EVENT PACKAGE")
+		update_event_packages(u_id, event_object.id, action)
 
-	return all_events(request)
+	return home(request)
 
-def update_event_packages(u_id, e_id):
-	new_event_package = EventPackage.objects.create(user_id = u_id, event_id = e_id)
-	new_event_package.save()
+
+def drop_event(request, event_id):
+	u_id = request.user.id
+	event_object = Event.objects.get(id = event_id)
+	action = "DROP"
+
+	if(is_signed_up(event_object.id, u_id)):
+		event_object.taken_slots = event_object.taken_slots - 1
+		event_object.save()
+		update_event_packages(u_id, event_object.id, action)
+	else:
+		print("Unable to drop an event for which you did not register")
+
+	return home(request)
+
+
+# # # # ================== FIX ME ==================== # # # #
+def is_conflic(u_id, e_id):
+	event = Event.objects.get(id = e_id) #Get event for which to check conflict and trying to register
+	days_of_event = list_day(event.id) #Get all days for this event. List of EventWeekDay objects
+	# days_of_event = EventWeekDay.objects.filter(event_id = event.id)
+	start_time_1 = event.start_time
+	end_time_1 = event.end_time
+	# print(event)
+	# user_events = EventPackage.objects.filter(user_id = u_id) # QuerySet list
+	# # print(user_events)
+	# user_event_list = []
+	#
+	# # Convert QuerySet list to EventPackage list
+	# for i in range(len(user_events)):
+	# 	user_event_list.append(user_events[i])
+
+	try:
+		user_event_list = list_user_events(u_id) # get all user events. List of Events
+		print(user_event_list)
+
+		# e is Event object
+		for e in user_event_list:
+			print(e.id)
+			# days_of_e_list is an int list
+			days_of_e_list = list_day(e.id) # for each user event, get days for that event
+			print(days_of_e_list)
+			# days_of_e = EventWeekDay.objects.filter(event_id = e.id) # QuerySet list
+			# print("========================+")
+			# print(days_of_e)
+			# print("========================+")
+			# days_of_e_list = []
+			#
+			# # Convert QuerySet list to EventWeekDay list
+			# for i in range(len(days_of_e)):
+			# 	days_of_e_list.append(days_of_e[i])
+
+			for i in range(len(days_of_event)):
+				for j in range(len(days_of_e_list)):
+					# print("========================")
+					# print(day)
+					# print(str(day.weedday_id))
+					# print("========================")
+					# print(days_of_e_list)
+					# print("========================")
+					if(days_of_event[i] == days_of_e_list[j]):
+						start_time_2 = e.start_time
+						end_time_2 = e.end_time
+						print(str(start_time_1) + " - " + str(end_time_1))
+						print('\n')
+						print(str(start_time_2) + " - " + str(end_time_2))
+						if((start_time_1 <= start_time_2 and start_time_2 <= end_time_1) or (start_time_1 <= end_time_2 and end_time_2 <= end_time_1)):
+							print("returning a conflict in time")
+							return True
+	except:
+		print("returning NO conflict in time")
+		return False
+
+def list_day(e_id):
+	days_list = []
+	# days_query_set = EventWeekDay.objects.filter(event_id = e_id)
+
+	days_query_set = EventWeekDay.objects.all().filter(event_id = e_id)
+	print("*** IN LIST DAYS")
+	print(e_id)
+	print(days_query_set)
+	for d in range(len(days_query_set)):
+		days_list.append(days_query_set[d].weedday_id)
+	print(days_list)
+	print("*** OUT LIST DAYS")
+	return days_list
+
+def list_user_events(u_id):
+	print("*** IN LIST USER EVENTS")
+	event_package_list = []
+	event_query_set = EventPackage.objects.filter(user_id = u_id)
+	print(event_query_set)
+
+	for e in range(len(event_query_set)):
+		event_package_list.append(event_query_set[e])
+	print(event_package_list[0].event_id)
+
+	user_event_list = []
+
+	for e in event_package_list:
+		print(e)
+		event = Event.objects.get(id = e.event_id)
+		user_event_list.append(event)
+	print(user_event_list)
+	print("*** OUT LIST USER EVENTS")
+	return user_event_list
+
+
+# event_1::  12:00  -  14:00
+# event_2::       13:00  -  15:00
+#
+#
+
+def is_signed_up(e_id, u_id):
+	try:
+		query_Event_package = EventPackage.objects.get(user_id = u_id, event_id = e_id)
+		print("\nUSER_ID = " + str(u_id) + " ***IS*** SIGNED UP FOR EVENT_ID " + str(e_id))
+		return True
+	except:
+		query_Event_package = None
+		print("\nUSER_ID = " + str(u_id) + " ***IS NOT*** SIGNED UP FOR EVENT_ID " + str(e_id))
+		return False
+
+
+def update_event_packages(u_id, e_id, action):
+	if(action == "REGISTER"):
+		new_event_package = EventPackage.objects.create(user_id = u_id, event_id = e_id)
+		new_event_package.save()
+		print("\nSUCESSFULLY ADDED NEW EVENT PACKAGE FOR USER_ID = " + str(u_id) + " AND EVENT_ID = " + str(e_id))
+	if(action == "DROP"):
+		EventPackage.objects.filter(user_id = u_id, event_id = e_id).delete()
+
 
 class SignUp(CreateView):
     form_class = UserCreationForm
     success_url = reverse_lazy("login")
     template_name = "registration/signup.html"
+
+
 
 
 # def login(request):

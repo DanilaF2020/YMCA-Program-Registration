@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
   <head>
     <style>
@@ -21,6 +22,9 @@
 		  {% if user.is_superuser %}
 		  		<form action="http://127.0.0.1:8000/admin/ymca/event/add/">
 					<input type="submit" value="Create Event" />
+				</form>
+				<form action="{% url 'create-event-form' %}">
+					<input type="submit" value="Create Event Form" />
 				</form>
 		  {% else %}
 		  {% endif %}
@@ -52,7 +56,11 @@
 					<li>Location: {{ event.location }}</li>
 					<li>Info: {{ event.description }}</li>
 					{% if user.is_authenticated and user.is_superuser != True %}
-						<a href="{% url 'register_for_event' %}">REGISTER</a>
+					<form>
+						<a href="{% url 'register' event.id %}">REGISTER</a>
+						&emsp;
+						<a href="{% url 'drop' event.id %}">DROP</a>
+					</form>
 					{% endif %}
 					{% if user.is_superuser %}
 						<a href="http://127.0.0.1:8000/admin/ymca/event/{{ event.id }}/change/">Modify Event</a>

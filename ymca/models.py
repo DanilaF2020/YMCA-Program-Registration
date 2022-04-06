@@ -1,5 +1,8 @@
 from django.db import models
 
+
+# # Check out Django generic classes for representing content of the database tables
+
 # # Create your models here.
 class User(models.Model):
 	username = models.CharField(max_length=200)
@@ -41,6 +44,20 @@ class Event(models.Model):
 
 	def __str__(self):
 		return self.event_name
+
+class EventWeekDay(models.Model):
+	event_id = models.IntegerField(default=0)
+	weedday_id = models.PositiveSmallIntegerField(
+		choices=(
+			(1, "Monday"),
+			(2, "Tuesday"),
+			(3, "Wednesday"),
+			(4, "Thursday"),
+			(5, "Friday"),
+			(6, "Saturday"),
+			(7, "Sunday")
+		)
+)
 
 class EventPackage(models.Model):
 	user_id = models.IntegerField(default=0)
