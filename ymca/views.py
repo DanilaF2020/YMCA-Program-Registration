@@ -34,33 +34,46 @@ from .forms import EventForm
 def home(request):
 	try:
 		event_list = Event.objects.all()
-		print(event_list)
-		weekdays = []
-		for e in randge(len(event_list)):
-			weekdays
+		# print(event_list)
+		# weekdays = []
+		# for e in event_list:
+		# 	weekdays = list_day(e.id)
 
 	except:
 		event_list = []
 	return render(request, 'ymca/home.html', {'event_list':event_list})
 
 def weekdays_to_string(weekdays_int_list):
-	string_weekdays_list = []
-	for d in weekdays_int_list:
-		if(d == 1):
-			string_weekdays_list.append("Monday")
-		if(d == 2):
-			string_weekdays_list.append("Tuesday")
-		if(d == 3):
-			string_weekdays_list.append("Wednesday")
-		if(d == 4):
-			string_weekdays_list.append("Thursday")
-		if(d == 5):
-			string_weekdays_list.append("Friday")
-		if(d == 6):
-			string_weekdays_list.append("Saturday")
-		if(d == 7):
-			string_weekdays_list.append("Sunday")
-	return string_weekdays_list
+	print("IN weekdays_to_string")
+	print(weekdays_int_list)
+	string_weekdays = ""
+	for i in range(len(weekdays_int_list)):
+		if(weekdays_int_list[i] == '1'):
+			# string_weekdays_list.append("Monday")
+			string_weekdays = string_weekdays + "Monday "
+		elif(weekdays_int_list[i] == '2'):
+			# string_weekdays_list.append("Tuesday")
+			string_weekdays = string_weekdays + "Tuesday "
+		elif(weekdays_int_list[i] == '3'):
+			# string_weekdays_list.append("Wednesday")
+			string_weekdays = string_weekdays + "Wednesday "
+		elif(weekdays_int_list[i] == '4'):
+			# string_weekdays_list.append("Thursday")
+			string_weekdays = string_weekdays + "Thursday "
+		elif(weekdays_int_list[i] == '5'):
+			# string_weekdays_list.append("Friday")
+			string_weekdays = string_weekdays + "Friday "
+		elif(weekdays_int_list[i] == '6'):
+			# string_weekdays_list.append("Saturday")
+			string_weekdays = string_weekdays + "Saturday "
+		else:
+			# string_weekdays_list.append("Sunday")
+			string_weekdays = string_weekdays + "Sunday "
+	print(string_weekdays)
+	# string_weekdays_list = listToString(string_weekdays_list)
+	# print(string_weekdays_list)
+	print("OUT weekdays_to_string")
+	return string_weekdays
 
 
 
@@ -69,11 +82,11 @@ def all_events(request):
 	return render(request, 'ymca/events_list.html',{'event_list':event_list})
 
 
-
 def display_event_form(request):
 	context = {}
 	context['form'] = EventForm()
 	return render(request, 'ymca/create-event.html', context)
+
 
 def create_event(request):
 	print("create_event")
@@ -82,24 +95,25 @@ def create_event(request):
 		if(form.is_valid()):
 			print(form.cleaned_data)
 			data = {
-			'event_name' : form.cleaned_data.get("event_name"),
-			'start_date' : form.cleaned_data.get("start_date"),
-			'end_date' : form.cleaned_data.get("end_date"),
-			'start_time' : form.cleaned_data.get("start_time"),
-			'end_time' : form.cleaned_data.get("end_time"),
-			'slots' : form.cleaned_data.get("slots"),
-			'taken_slots' : 0,
-			'requirements' : form.cleaned_data.get("requirements"),
-			'recurring' : form.cleaned_data.get("recurring"),
-			'non_member_cost' : form.cleaned_data.get("non_member_cost"),
-			'member_cost' : form.cleaned_data.get("member_cost"),
-			'location' : form.cleaned_data.get("location"),
-			'description' : form.cleaned_data.get("description")
+				'event_name' : form.cleaned_data.get("event_name"),
+				'start_date' : form.cleaned_data.get("start_date"),
+				'end_date' : form.cleaned_data.get("end_date"),
+				'start_time' : form.cleaned_data.get("start_time"),
+				'end_time' : form.cleaned_data.get("end_time"),
+				'slots' : form.cleaned_data.get("slots"),
+				'taken_slots' : 0,
+				'requirements' : form.cleaned_data.get("requirements"),
+				'recurring' : form.cleaned_data.get("recurring"),
+				'non_member_cost' : form.cleaned_data.get("non_member_cost"),
+				'member_cost' : form.cleaned_data.get("member_cost"),
+				'location' : form.cleaned_data.get("location"),
+				'description' : form.cleaned_data.get("description")
 			}
 			print("/n")
 			print(data)
 
 
+			daysList = weekdays_to_string(data['recurring'])
 			# Fix recurring later
 			new_event = Event.objects.create(event_name = data['event_name'],
 											 start_date = data['start_date'],
@@ -108,8 +122,8 @@ def create_event(request):
 											 end_time = data['end_time'],
 											 slots = data['slots'],
 											 taken_slots = data['taken_slots'],
-											 requirements = data['event_name'],
-											 recurring = 1,
+											 requirements = data['requirements'],
+											 recurring = daysList,
 											 non_member_cost = data['non_member_cost'],
 											 member_cost = data['member_cost'],
 											 location = data['location'],
@@ -121,6 +135,17 @@ def create_event(request):
 				new_event_weekday.save()
 			return home(request) #ADD A SUCCESS URL
 	return home(request)
+
+
+def listToString(list):
+	print("IN listToSting")
+	str = ""
+	for e in list:
+		str = str + e
+		str = str + " "
+	print(str)
+	print("OUT listToSting")
+	return str
 
 	# return HttpResponse(request, 'http://127.0.0.1:8000/admin/ymca/event/add/')
 # def search_user_events(request, name):

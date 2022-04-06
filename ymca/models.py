@@ -28,15 +28,16 @@ class Event(models.Model):
 	taken_slots = models.IntegerField(default=0)
 	requirements = models.CharField(max_length=200, default='None')
 	# recurring = models.DateField(u'Day of the event', help_text=u'Day of the event')
-	recurring = models.PositiveSmallIntegerField(
-		choices=(
-			(1, "Daily"),
-			(2, "Every Other Day"),
-			(3, "Weekly"),
-			(4, "Never"),
-			(5, "Other..."),
-		)
-	)
+	recurring = models.CharField(max_length=300)
+	# recurring = models.PositiveSmallIntegerField(
+	# 	choices=(
+	# 		(1, "Daily"),
+	# 		(2, "Every Other Day"),
+	# 		(3, "Weekly"),
+	# 		(4, "Never"),
+	# 		(5, "Other..."),
+	# 	)
+	# )
 	non_member_cost = models.IntegerField(default=0)
 	member_cost = models.IntegerField(default=0)
 	location = models.CharField(max_length=200)
