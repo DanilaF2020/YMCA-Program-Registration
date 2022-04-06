@@ -8,8 +8,6 @@
 	 form{
 	   text-align: center;
 	 }
-
-
     </style>
   </head>
   <body>
@@ -35,38 +33,37 @@
 		      <input type="submit" value="Log In" />
 		  </form>
       {% endif %}
-  </div>
-  		<h1>Events</h1>
+	</div>
+  	<h1>Events</h1>
 
-  <div class="container">
-	  {% block content %}
-	  		{% for event in event_list %}
-			<strong>{{ event }}</strong>
-			<ul>
-	  			<li>Start: {{ event.start_date }}</li>
-				<li>End: {{ event.end_date }}</li>
-				<li>Time: {{ event.start_time }}</li>
-				<li>Requirements: {{ event.requirements }}</li>
-				<li>Slots: 0/{{ event.slots }}</li>
-				<li>Non-Member Price: ${{ event.non_member_cost }}</li>
-				<li>Member Price: ${{ event.member_cost }}</li>
-				<li>Location: {{ event.location }}</li>
-				<li>Info: {{ event.description }}</li>
-				{% if user.is_authenticated and user.is_superuser != True %}
-					<a href="">REGISTER</a>
-				{% endif %}
-				{% if user.is_superuser%}
-					<a href="http://127.0.0.1:8000/admin/ymca/event/">Modify Event</a>
-					&emsp;
-					<a href="http://127.0.0.1:8000/admin/ymca/event/">Delete Event</a>
-				{% endif %}
-			</ul>
-			<hr style="width:18%;text-align:left;margin-left:0">
-			<br>
+	<div class="container">
+		{% block content %}
+			{% for event in event_list %}
+				<strong>{{ event }}</strong>
+				<ul>
+			  		<li>Start: {{ event.start_date }}</li>
+					<li>End: {{ event.end_date }}</li>
+					<li>Day: {{ event.id }} </li>
+					<li>Time: {{ event.start_time }} - {{ event.end_time }}</li>
+					<li>Requirements: {{ event.requirements }}</li>
+					<li>Slots: {{ event.taken_slots }}/{{ event.slots }}</li>
+					<li>Non-Member Price: ${{ event.non_member_cost }}</li>
+					<li>Member Price: ${{ event.member_cost }}</li>
+					<li>Location: {{ event.location }}</li>
+					<li>Info: {{ event.description }}</li>
+					{% if user.is_authenticated and user.is_superuser != True %}
+						<a href="{% url 'register_for_event' %}">REGISTER</a>
+					{% endif %}
+					{% if user.is_superuser %}
+						<a href="http://127.0.0.1:8000/admin/ymca/event/{{ event.id }}/change/">Modify Event</a>
+						&emsp;
+						<a href="http://127.0.0.1:8000/admin/ymca/event/{{ event.id }}/change/">Delete Event</a>
+					{% endif %}
+				</ul>
+				<hr style="width:18%; text-align:left; margin-left:0">
+				<br>
 			{% endfor %}
-
 	  {% endblock %}
-  </div>
-
+	</div>
   </body>
 </html>

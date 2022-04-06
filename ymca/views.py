@@ -6,8 +6,13 @@ from django.urls import reverse_lazy
 from django.contrib.auth.forms import UserCreationForm
 from django.views.generic.edit import CreateView
 
-# from .models import User
+from .models import User
 from .models import Event
+from .models import EventPackage
+
+# https://alexpnt.github.io/2017/07/15/django-calendar/
+# https://www.youtube.com/watch?v=Myrp1WqSwCk
+
 
 # Create your views here.
 # def index(request):
@@ -22,17 +27,40 @@ from .models import Event
 #     # context = {'event_list': event_list,}
 #     return render(request, 'ymca/YMCA-login.html')
 
-def all_events(request):
-	event_list = Event.objects.all()
-	return render(request, 'ymca/events_list.html',
-	{'event_list':event_list})
-
 def home(request):
 	event_list = Event.objects.all()
 	return render(request, 'ymca/home.html', {'event_list':event_list})
 
+def all_events(request):
+	event_list = Event.objects.all()
+	return render(request, 'ymca/events_list.html',{'event_list':event_list})
+
 def create_event(request):
 	return HttpResponse(request, 'http://127.0.0.1:8000/admin/ymca/event/add/')
+
+def search_user_events(request, name):
+	try:
+		user = User.objects.get(username == name)
+	except:
+		print("No User Found")
+		# Handle if user name was not found in the database
+
+	user_events_list = Event.objects.all(id = EventPackage.objects.all(user_id == user.id).event_id)
+
+	return render(request, 'ymca/events_list.html',{'event_list':user_events_list})
+
+def register_for_event(request, u_id, event_object):
+	if (event_object.taken_slots == event_object.slots) or ():
+		return all_events(request)
+	else:
+		event_object.taken_slots = event_object.taken_slots + 1
+		update_event_packages(u_id, event_object.id)
+
+	return all_events(request)
+
+def update_event_packages(u_id, e_id):
+	new_event_package = EventPackage.objects.create(user_id = u_id, event_id = e_id)
+	new_event_package.save()
 
 class SignUp(CreateView):
     form_class = UserCreationForm
