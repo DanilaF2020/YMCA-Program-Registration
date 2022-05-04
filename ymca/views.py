@@ -8,7 +8,8 @@ from django.urls import reverse_lazy
 from django.contrib.auth.forms import UserCreationForm
 from django.views.generic.edit import CreateView
 
-from .models import User
+##from .models import User
+from django.contrib.auth.models import User
 from .models import Event
 from .models import EventPackage
 from .models import EventWeekDay
@@ -75,8 +76,15 @@ def weekdays_to_string(weekdays_int_list):
 def searched(request):
 	if request.method == 'GET':
 		search = request.GET.get('search')
-		post = Event.objects.all().filter(event_name=search)
-	return render(request, 'ymca/home.html', {'event_list':post})
+		test = User.objects.all().filter(username=search)
+		if test.exists():
+			userName = User.objects.get(username=search)
+			eventIds = EventPackage.objects.all().filter(user_id=userName.id).values_list('event_id', flat=True)
+			post = Event.objects.all().filter(id__in=eventIds)
+			return render(request, 'ymca/home.html', {'event_list':post})
+		else:
+			post = Event.objects.all().filter(event_name='---------')
+			return render(request, 'ymca/home.html', {'event_list':post})
 
 
 def all_events(request):
