@@ -1,0 +1,47 @@
+
+<!-- registration/login.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YMCA</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/YMCA-login.css' %}">
+  <script src="{% static 'js/YMCA-login.js' %}"></script>
+</head>
+
+<body>
+   
+  <div id="main-holder">
+    <img src="{% static 'pic/YMCApic.png' %}" alt="YMCA Logo" width="150px" height="150px">
+    <h2 id="login-header">Welcome</h2>
+    
+    <form action="{% url 'home' %}" id="login-form">
+      <input type="submit" value="HOME" />
+    </form>
+    <form method="post">
+      {% csrf_token %}
+      <table>
+        {{ form.as_p }}
+        <tr>
+          <td>&nbsp;</td>
+          <td><input type="submit" value="Log In"></td>
+        </tr>
+      </table>
+    </form>
+
+    <form id="reg-form" style="display: none;">
+        <input type="text" name="username" id="username-field" class="reg-form-field" placeholder="Username">   
+        <input type="password" name="password" id="reg-password-field" class="reg-form-field" placeholder="Password">
+        <input type="password" name="password" id="reg2-password-field" class="reg-form-field" placeholder="Repeat Password">
+        <label><input type="checkbox" name="instructor">I am an instructor</label>
+        <input type="submit" value="Register" id="reg-form-submit">
+     </form>
+  
+    </div>
+</body>
+
+</html>

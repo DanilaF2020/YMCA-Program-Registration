@@ -1,0 +1,70 @@
+<html>
+  <head>
+    <style>
+     h1{
+      color: black;
+      text-align: center;
+     }
+	 form{
+	   text-align: center;
+	 }
+
+    </style>
+  </head>
+  <body>
+	<h1>YMCA Programs Registration</h1>
+    <h1>Welcome, {{ user.username|default:'Guest' }}</h1>
+    <div>
+      {% if user.is_authenticated %}
+		  {% if user.is_superuser %}
+				<form action="{% url 'home' %}">
+					<input type="submit" value="HOME" />
+				  </form>
+				<form action="{% url 'searched-users' %}">
+					<input type="text" placeholder="Search Users" name="search">
+					<button type="submit">Go</button>
+				  </form>
+				<form action="{% url 'view-users' %}">
+					<input type="submit" value="clear selection" />
+				  </form>
+		  {% else %}
+		  {% endif %}
+
+      {% else %}
+      {% endif %}
+  </div>
+  		<h1>Users</h1>
+
+  <div class="container" id="users">
+	  {% block content %}
+				{% if messages %}
+						<ul class="messages">
+							{% for message in messages %}
+								<li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+							{% endfor %}
+						</ul>
+				{% endif %}
+	  		{% if user_list %}
+	  		{% for users in user_list %}
+			<strong>{{ users }}</strong>
+			<ul class="class">
+				<li>Username: {{ users.username }}</li>
+				{% if user.is_superuser%}
+					{% if users.is_active %}
+					<a href="{% url 'deactivate' users.id %}">DEACTIVATE</a>
+					{% else %}
+					<a href="{% url 'deactivate' users.id %}">ACTIVATE</a>
+					{% endif %}
+				{% endif %}
+			</ul>
+			<hr style="width:18%;text-align:left;margin-left:0">
+			<br>
+			{% endfor %}
+			{% else %}
+				<h1>NO USERS. . . COME BACK LATER</h1>
+			{% endif %}
+	  {% endblock %}
+  </div>
+
+  </body>
+</html>
