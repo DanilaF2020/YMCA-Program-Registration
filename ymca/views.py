@@ -7,6 +7,11 @@ from django.template.loader import get_template
 from django.urls import reverse_lazy
 from django.contrib.auth.forms import UserCreationForm
 from django.views.generic.edit import CreateView
+from django import template
+from django.contrib.auth.models import Group
+
+# display messages
+from django.contrib import messages
 
 ##from .models import User
 from django.contrib.auth.models import User
@@ -87,9 +92,78 @@ def searched(request):
 			return render(request, 'ymca/home.html', {'event_list':post})
 
 
+def searched_user(request):
+	if request.method == 'GET':
+		search = request.GET.get('search')
+		post = Event.objects.all().filter(event_name=search)
+	return render(request, 'ymca/home.html', {'event_list':post})
+
+
+def searched_users(request):
+	if request.method == 'GET':
+		search = request.GET.get('search')
+		post = User.objects.all().filter(username=search)
+	return render(request, 'ymca/view_users.html', {'user_list':post})
+
 def all_events(request):
 	event_list = Event.objects.all()
 	return render(request, 'ymca/events_list.html',{'event_list':event_list})
+
+
+def registered(request):
+	if request.method == 'GET':
+		test = User.objects.all().filter(username=request.user.username)
+		if test.exists():
+			userName = User.objects.get(username=request.user.username)
+			eventIds = EventPackage.objects.all().filter(user_id=userName.id).values_list('event_id', flat=True)
+			post = Event.objects.all().filter(id__in=eventIds)
+			return render(request, 'ymca/home.html', {'event_list':post})
+		else:
+			post = Event.objects.all().filter(event_name='---------')
+			return render(request, 'ymca/home.html', {'event_list':post})
+
+
+def view_users(request):
+	try:
+		user_list = User.objects.all()
+	except:
+		user_list = []
+
+	return render(request, 'ymca/view_users.html', {'user_list':user_list})
+
+
+def deactivate(request, username):
+	u = User.objects.all().get(id=username)
+	if(u.is_active==True):
+		u.is_active = False
+		messages.info(request, 'USER DEACTIVATED')
+	else:
+		u.is_active = True
+		messages.info(request, 'USER ACTIVATED')
+	u.save()
+	
+	return view_users(request)
+
+def delete(request, event_id):
+	e = Event.objects.all().get(id=event_id)
+	e.delete()
+
+	return home(request)
+
+
+def member(request, username):
+	my_group = Group.objects.get(name='member') 
+	user = User.objects.get(id=username)
+	my_group.user_set.add(user)
+
+	return view_users(request)
+
+def nonmember(request, username):
+	my_group = Group.objects.get(name='member') 
+	user = User.objects.get(id=username)
+	my_group.user_set.remove(user)
+
+	return view_users(request)
 
 
 def display_event_form(request):
@@ -180,12 +254,15 @@ def register_for_event(request, event_id):
 	action = "REGISTER"
 	# is_conflic(u_id, event_object.id)
 	if (event_object.taken_slots == event_object.slots):
+		messages.info(request, 'ALL SLOTS ARE FULL. UNABLE TO SIGN UP')
 		print("\nALL SLOTS ARE FULL. UNABLE TO SIGN UP")
 		# return all_events(request)
 	elif (is_signed_up(event_object.id, u_id)):
+		messages.info(request, 'THE CURRENT USER IS ALREADY SIGNED UP FOR THIS CLASS')
 		print("\nUSER WITH ID = " + str(u_id) + " ALREADY SIGNED UP FOR EVENT ID = " + str(event_object.id))
 		# return all_events(request)
 	elif (is_conflic(u_id, event_object.id)):
+		messages.info(request, 'TIME CONFLICT WITH ALREADY EXISTING EVENT')
 		print("\nTIME CONFLICT WITH ALREADY EXISTING EVENT")
 	else:
 		print("\nUPDATING SLOT COUNT FOR EVENT_ID = " + str(event_object.id) + " : " + str(event_object.taken_slots) + "/" + str(event_object.slots))
@@ -194,6 +271,7 @@ def register_for_event(request, event_id):
 		print("\n***NEW SLOT COUNT FOR EVENT_ID = " + str(event_object.id) + " : " + str(event_object.taken_slots) + "/" + str(event_object.slots))
 		print("\nREQUESTING UPDATE EVENT PACKAGE")
 		update_event_packages(u_id, event_object.id, action)
+		messages.info(request, 'SUCCESSFULLY ADDED CLASS')
 
 	return home(request)
 
@@ -207,8 +285,10 @@ def drop_event(request, event_id):
 		event_object.taken_slots = event_object.taken_slots - 1
 		event_object.save()
 		update_event_packages(u_id, event_object.id, action)
+		messages.info(request, 'DROPPED EVENT')
 	else:
 		print("Unable to drop an event for which you did not register")
+		messages.info(request, 'UNABLE TO DROP AN EVENT FOR WHICH YOU DID NOT REGISTER')
 
 	return home(request)
 

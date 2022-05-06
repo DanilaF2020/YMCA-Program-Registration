@@ -1,13 +1,44 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<style>
+			input{
+				margin: auto;
+				display: block;
+			}
+			label{
+				margin: auto;
+				
+			}
+			div{
+				margin: auto;
+				  width: 25%;
+				text-align: center;
+			}
+			#id_recurring{
+				width: 100%;
+				text-align: center;
+			}
+			#holder{
+				border: 1px solid black;
+				background-color: white;
+			}
+			body{
+				background-color: gray;
+			}
+		</style>
 		<title>YMCA Create Event</title>
 	</head>
 	<body>
-		<form action="{% url 'create-event' %}" method="POST">
-		    {% csrf_token %}
-		    {{ form }}
-		    <input type="submit" value="Submit">
-		</form>
+		<div id="holder">
+			<form action="{% url 'create-event' %}" method="POST">
+		  		{% csrf_token %}
+		   	 	{{ form }}
+		   	 	<input type="submit" value="Submit">
+			</form>
+			<form action="{% url 'home' %}" id="login-form">
+				<input type="submit" value="Back" />
+			  </form>
+		</div>
 	</body>
 </html>

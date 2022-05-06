@@ -1,5 +1,9 @@
 <html>
+
+{% load auth_extras %}
+
   <head>
+	{% load static %}
     <style>
      h1{
       color: black;
@@ -8,39 +12,92 @@
 	 form{
 	   text-align: center;
 	 }
-
+	 #img{
+		display: block;
+  		margin-left: auto;
+  		margin-right: auto;
+  		width: 50%;
+	 }
+	 #buttonHolder{
+		justify-content: center;
+    	align-items: center;
+		display: flex;
+	 }
+	.button{
+		display: inline-block;
+		padding-left: 5px;
+		padding-right: 5px;
+	}
+	#allHolder{
+		background-color: white;
+		width: 75%;
+		justify-content: center;
+    	align-items: center;
+		margin: auto;
+		border: black 5px solid;
+	}
+	body{
+		background-color: gray;
+	}
+	#events{
+	 width: 50%;
+	 margin: auto;
+	}
+	#eventWrapper{
+		border: 1px black solid;
+	}
     </style>
   </head>
   <body>
+	  <div id="allHolder">
+	<img src="{% static 'pic/YMCAbanner.png' %}" alt="YMCA Logo" id="img">
 	<h1>YMCA Programs Registration</h1>
     <h1>Welcome, {{ user.username|default:'Guest' }}</h1>
     <div>
+		<div id="buttonHolder">
       {% if user.is_authenticated %}
-		  <form action="{% url 'logout' %}">
+		  <form action="{% url 'logout' %}" class="button">
 		      <input type="submit" value="Log Out" />
 		  </form>
 		  {% if user.is_superuser %}
 		  		<!-- <form action="http://127.0.0.1:8000/admin/ymca/event/add/">
 					<input type="submit" value="Create Event" />
 				</form> -->
-				<form action="{% url 'create-event-form' %}">
-					<input type="submit" value="Create Event Form" />
+				<form action="{% url 'create-event-form' %}" class="button">
+					<input type="submit" value="Create Event" />
 				</form>
-				<form action="{% url 'home' %}" id="login-form">
-					<input type="submit" value="HOME" />
+				<form action="{% url 'view-users' %}" class="button">
+					<input type="submit" value="View Users" />
+				</form>
+				<form action="{% url 'home' %}" id="login-form" class="button">
+					<input type="submit" value="Home" />
 				  </form>
+		</div>
 				<form action="{% url 'searched' %}">
+					<input type="text" placeholder="Search Events by Username" name="search">
+					<button type="submit">Go</button>
+				  </form>
+				 <form action="{% url 'searched-event' %}">
 					<input type="text" placeholder="Search Events" name="search">
 					<button type="submit">Go</button>
 				  </form>
+				<form action="{% url 'home' %}">
+					<input type="submit" value="clear selection" />
+				  </form>
 		  {% else %}
+				<form action="{% url 'registered' %}" class="button">
+					<input type="submit" value="View Registed Events" />
+					</form>
+				<form action="{% url 'home' %}" class="button">
+					<input type="submit" value="clear selection" />
+				  </form>
 		  {% endif %}
 
       {% else %}
-		  <form action="{% url 'signup' %}">
+		  <form action="{% url 'signup' %}" class="button">
 		      <input type="submit" value="Sign Up" />
 		  </form>
-		  <form action="{% url 'login' %}" method="get">
+		  <form action="{% url 'login' %}" method="get" class="button">
 		      <input type="submit" value="Log In" />
 		  </form>
       {% endif %}
@@ -49,9 +106,17 @@
 
   <div class="container" id="events">
 	  {% block content %}
+				{% if messages %}
+						<ul class="messages">
+							{% for message in messages %}
+								<li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+							{% endfor %}
+						</ul>
+				{% endif %}
 	  		{% if event_list %}
 	  		{% for event in event_list %}
-			<strong>{{ event }}</strong>
+			<div id="eventWrapper">
+			  <strong>{{ event }}</strong>
 			<ul class="event">
 				<li>Start: {{ event.start_date }}</li>
 				<li>End: {{ event.end_date }}</li>
@@ -59,28 +124,32 @@
 				<li>Time: {{ event.start_time }} - {{ event.end_time }}</li>
 				<li>Requirements: {{ event.requirements }}</li>
 				<li>Slots: {{ event.taken_slots }}/{{ event.slots }}</li>
-				<li>Non-Member Price: ${{ event.non_member_cost }}</li>
-				<li>Member Price: ${{ event.member_cost }}</li>
+					{% if user.id|has_group:"member" or user.is_superuser == True or user.is_authenticated != True%}
+					<li>Member Price: ${{ event.member_cost }}</li>
+					{% endif%}
+					{% if user.id|has_group:"member" != True or user.is_superuser == True or user.is_authenticated != True%}
+					<li>Non-Member Price: ${{ event.non_member_cost }}</li>
+					{% endif %}
 				<li>Location: {{ event.location }}</li>
 				<li>Info: {{ event.description }}</li>
-				{% if user.is_authenticated and user.is_superuser != True %}
+				{% if user.is_authenticated and user.is_superuser != True%}
 					<a href="{% url 'register' event.id %}">REGISTER</a>
 					<a href="{% url 'drop' event.id %}">DROP</a>
 				{% endif %}
 				{% if user.is_superuser%}
 				<a href="http://127.0.0.1:8000/admin/ymca/event/{{ event.id }}/change/">Modify Event</a>
 				&emsp;
-				<a href="http://127.0.0.1:8000/admin/ymca/event/{{ event.id }}/change/">Delete Event</a>
+				<a href="{% url 'delete' event.id %}">Delete Event</a>
 				{% endif %}
 			</ul>
-			<hr style="width:18%;text-align:left;margin-left:0">
-			<br>
+			
 			{% endfor %}
 			{% else %}
 				<h1>NO EVENTS. . . COME BACK LATER</h1>
 			{% endif %}
 	  {% endblock %}
+			</div>
   </div>
-
+	  </div>
   </body>
 </html>
