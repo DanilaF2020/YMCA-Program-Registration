@@ -135,6 +135,16 @@ def view_users(request):
 def deactivate(request, username):
 	u = User.objects.all().get(id=username)
 	if(u.is_active==True):
+		eventIds = EventPackage.objects.all().filter(user_id=username).values_list('event_id', flat=True)
+		event = Event.objects.all().filter(id__in=eventIds)
+		for e in event:
+			print("dec")
+			e.taken_slots = e.taken_slots - 1
+			e.save()
+		eventPack = EventPackage.objects.all().filter(user_id=username)
+		for e in eventPack:
+			print("del")
+			e.delete()
 		u.is_active = False
 		messages.info(request, 'USER DEACTIVATED')
 	else:
